@@ -373,17 +373,10 @@ namespace Il2CppDumper_PropertyRestoration
                                 continue;
 
                             var backingFieldName = $"<{property.Name}>k__BackingField";
+                            var backingField = type.Fields.FirstOrDefault(f => f.Name == backingFieldName);
 
-                            // Check if backing field already exists
-                            if (type.Fields.Any(f => f.Name == backingFieldName))
+                            if (backingField == null)
                                 continue;
-
-                            var backingField = new FieldDefinition(
-                                backingFieldName,
-                                FieldAttributes.Private,
-                                property.PropertyType
-                            );
-                            type.Fields.Add(backingField);
 
                             if (property.GetMethod != null && !property.GetMethod.IsAbstract && property.GetMethod.Body != null)
                             {
