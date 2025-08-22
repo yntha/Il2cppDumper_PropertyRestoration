@@ -371,8 +371,15 @@ namespace Il2CppDumper_PropertyRestoration
                         {
                             if (property.PropertyType == null)
                                 continue;
+
+                            var backingFieldName = $"<{property.Name}>k__BackingField";
+
+                            // Check if backing field already exists
+                            if (type.Fields.Any(f => f.Name == backingFieldName))
+                                continue;
+
                             var backingField = new FieldDefinition(
-                                $"<{property.Name}>k__BackingField",
+                                backingFieldName,
                                 FieldAttributes.Private,
                                 property.PropertyType
                             );
@@ -381,20 +388,53 @@ namespace Il2CppDumper_PropertyRestoration
                             if (property.GetMethod != null && !property.GetMethod.IsAbstract && property.GetMethod.Body != null)
                             {
                                 var il = property.GetMethod.Body.GetILProcessor();
-                                il.Clear();
-                                il.Emit(OpCodes.Ldarg_0);
-                                il.Emit(OpCodes.Ldfld, backingField);
-                                il.Emit(OpCodes.Ret);
+                                if (il.Body.Instructions.Count == 0)
+                                {
+                                    il.Emit(OpCodes.Ldarg_0);
+                                    il.Emit(OpCodes.Ldfld, backingField);
+                                    il.Emit(OpCodes.Ret);
+                                }
                             }
 
                             if (property.SetMethod != null && !property.SetMethod.IsAbstract && property.SetMethod.Body != null)
                             {
                                 var il = property.SetMethod.Body.GetILProcessor();
-                                il.Clear();
-                                il.Emit(OpCodes.Ldarg_0);
-                                il.Emit(OpCodes.Ldarg_1);
-                                il.Emit(OpCodes.Stfld, backingField);
-                                il.Emit(OpCodes.Ret);
+                                if (il.Body.Instructions.Count == 0)
+                                {
+                                    il.Emit(OpCodes.Ldarg_0);
+                                    il.Emit(OpCodes.Ldarg_1);
+                                    il.Emit(OpCodes.Stfld, backingField);
+                                    il.Emit(OpCodes.Ret);
+                                }
+                            }
+                        }
+
+                        foreach (var method in type.Methods)
+                        {
+                            if (!method.IsAbstract && method.Body != null)
+                            {
+                                var il = method.Body.GetILProcessor();
+                                if (il.Body.Instructions.Count == 0)
+                                {
+                                    if (method.ReturnType.FullName == "System.Void")
+                                    {
+                                        il.Emit(OpCodes.Ret);
+                                    }
+                                    else if (method.ReturnType.IsValueType)
+                                    {
+                                        var variable = new VariableDefinition(method.ReturnType);
+                                        method.Body.Variables.Add(variable);
+                                        il.Emit(OpCodes.Ldloca_S, variable);
+                                        il.Emit(OpCodes.Initobj, method.ReturnType);
+                                        il.Emit(OpCodes.Ldloc_0);
+                                        il.Emit(OpCodes.Ret);
+                                    }
+                                    else
+                                    {
+                                        il.Emit(OpCodes.Ldnull);
+                                        il.Emit(OpCodes.Ret);
+                                    }
+                                }
                             }
                         }
                     }
