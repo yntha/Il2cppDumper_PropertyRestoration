@@ -2,7 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/anhqw33vcpmp8ofa?svg=true)](https://ci.appveyor.com/project/Perfare/il2cppdumper/branch/master/artifacts)
 
-This version of Il2CppDumper restores proper functionality to getter/setter methods for properties in the generated DummyDlls. It was created to improve the output of my own tool, [bitlife-edit](https://github.com/yntha/bitlife-edit). It is based on Il2CppDumper v6.7.46.
+This version of Il2CppDumper restores proper functionality to getter/setter methods for properties in the generated DummyDlls. It was created to improve the output of my own tool, [bitlife-edit](https://github.com/yntha/bitlife-edit). It is based on Il2CppDumper v6.7.46. See the original Il2CppDumper tool [here](https://github.com/Perfare/Il2CppDumper).
 
 ## Features
 
